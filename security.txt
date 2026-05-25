@@ -1,0 +1,10 @@
+# Istina Smart Contract Security Contact
+# RFC 9116 compliant security.txt
+
+Contact: mailto:security@istina.co
+Contact: https://istina.co/contact
+
+Preferred-Languages: en
+
+Canonical: https://istina.co/.well-known/security.txt
+Expires: 2026-12-31T23:59:59Z

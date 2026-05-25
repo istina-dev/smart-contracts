@@ -1,0 +1,21 @@
+.anchor
+.DS_Store
+target
+tmp
+**/*.rs.bk
+node_modules
+test-ledger
+.yarn
+
+# Environment files (contain secrets!)
+.env
+.env.local
+.env.*.local
+
+# Keypair files (NEVER commit these!)
+deployer.json
+*-keypair.json
+.keypair-*.json
+
+# IDL is generated but should be committed for client use
+# !target/idl/
