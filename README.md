@@ -1,6 +1,6 @@
-# Istina Contest Program
+# Istina Contest and Quest Program
 
-On-chain escrow program for contest prize pools on Solana.
+On-chain escrow program for contest and quest prize pools on Solana.
 
 ## Scope
 
