@@ -18,12 +18,12 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 async function main() {
-  console.log('\n🔄 Updating GlobalConfig Admin to New Fee Payer');
+  console.log('\nUpdating GlobalConfig Admin to New Fee Payer');
   console.log('=================================');
 
   // Load program ID
   const programId = new PublicKey(process.env.SOLANA_PROGRAM_ID!);
-  console.log(`📋 Program ID: ${programId.toBase58()}`);
+  console.log(`Program ID: ${programId.toBase58()}`);
 
   // Load RPC endpoint
   const rpcUrl = process.env.SOLANA_RPC_ENDPOINT || 'https://api.devnet.solana.com';
@@ -31,7 +31,7 @@ async function main() {
   const network = process.env.SOLANA_NETWORK || 'devnet';
   console.log(`Network: ${network}`);
   if (network === 'mainnet' || network === 'mainnet-beta') {
-    console.error('❌ This legacy migration is devnet-only. For mainnet, use update-admin-to-squads.ts with .env.mainnet.local.');
+    console.error('ERROR: This legacy migration is devnet-only. For mainnet, use update-admin-to-squads.ts with .env.mainnet.local.');
     process.exit(1);
   }
 
@@ -40,9 +40,9 @@ async function main() {
   const oldKeypairPath = path.resolve(__dirname, '../../.secrets/old-fee-payer-keypair.json');
   
   if (!fs.existsSync(oldKeypairPath)) {
-    console.error('\n❌ Error: Old fee payer keypair not found!');
+    console.error('\nERROR: Old fee payer keypair not found.');
     console.error(`   Expected at: ${oldKeypairPath}`);
-    console.error('\n💡 If you still have access to the old fee payer:');
+    console.error('\nIf you still have access to the old fee payer:');
     console.error('   1. Create the old keypair from the array in your backup');
     console.error('   2. Save it to .secrets/old-fee-payer-keypair.json');
     console.error('\n   OR if you lost it:');
@@ -53,11 +53,11 @@ async function main() {
 
   const oldKeypairData = JSON.parse(fs.readFileSync(oldKeypairPath, 'utf-8'));
   const oldAdminKeypair = Keypair.fromSecretKey(new Uint8Array(oldKeypairData));
-  console.log(`\n👤 Old Admin (signing): ${oldAdminKeypair.publicKey.toBase58()}`);
+  console.log(`\nOld Admin (signing): ${oldAdminKeypair.publicKey.toBase58()}`);
 
   // Load NEW fee payer public key
   const newFeePayerPubkey = new PublicKey(process.env.FEE_PAYER_PUBLIC_KEY!);
-  console.log(`👤 New Admin (target): ${newFeePayerPubkey.toBase58()}`);
+  console.log(`New Admin (target): ${newFeePayerPubkey.toBase58()}`);
 
   // Create provider with old admin (to sign the update)
   const wallet = new Wallet(oldAdminKeypair);
@@ -82,25 +82,25 @@ async function main() {
     [Buffer.from('global-config')],
     programId
   );
-  console.log(`🔍 GlobalConfig PDA: ${globalConfig.toBase58()}`);
+  console.log(`GlobalConfig PDA: ${globalConfig.toBase58()}`);
 
   // Fetch current GlobalConfig
   try {
     const configAccount = await (program.account as any).globalConfig.fetch(globalConfig);
-    console.log(`\n📋 Current Admin: ${configAccount.admin.toBase58()}`);
+    console.log(`\nCurrent Admin: ${configAccount.admin.toBase58()}`);
     
     if (configAccount.admin.toBase58() === newFeePayerPubkey.toBase58()) {
-      console.log('\n✅ Admin is already set to the new fee payer. No update needed.');
+      console.log('\nAdmin is already set to the new fee payer. No update needed.');
       return;
     }
   } catch (error) {
-    console.error('\n❌ Failed to fetch GlobalConfig:', error);
+    console.error('\nERROR: Failed to fetch GlobalConfig:', error);
     console.error('   Make sure the program is initialized with init-program.ts first.');
     process.exit(1);
   }
 
   // Update admin
-  console.log('\n🚀 Updating admin...');
+  console.log('\nUpdating admin...');
   
   try {
     const tx = await (program.methods as any)
@@ -113,25 +113,25 @@ async function main() {
       .signers([oldAdminKeypair])
       .rpc();
 
-    console.log(`\n✅ Admin Updated Successfully!`);
+    console.log(`\nAdmin Updated Successfully.`);
     console.log(`   Transaction: ${tx}`);
     console.log(`   Explorer: https://solscan.io/tx/${tx}?cluster=${network}`);
 
     // Verify update
     const updatedConfig = await (program.account as any).globalConfig.fetch(globalConfig);
-    console.log(`\n📋 Verification:`);
+    console.log(`\nVerification:`);
     console.log(`   GlobalConfig PDA: ${globalConfig.toBase58()}`);
     console.log(`   New Admin: ${updatedConfig.admin.toBase58()}`);
     console.log(`   Bump: ${updatedConfig.bump}`);
     
     if (updatedConfig.admin.toBase58() === newFeePayerPubkey.toBase58()) {
-      console.log('\n✅ Admin update verified!');
+      console.log('\nAdmin update verified.');
     } else {
-      console.log('\n⚠️ Warning: Admin mismatch after update!');
+      console.log('\nWARNING: Admin mismatch after update.');
     }
 
   } catch (error) {
-    console.error('\n❌ Failed to update admin:', error);
+    console.error('\nERROR: Failed to update admin:', error);
     process.exit(1);
   }
 
@@ -147,7 +147,7 @@ async function main() {
 main()
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error('\n❌ Migration failed:', error);
+    console.error('\nERROR: Migration failed:', error);
     process.exit(1);
   });
 

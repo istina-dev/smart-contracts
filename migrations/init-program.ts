@@ -83,7 +83,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`👤 Admin/Fee Payer: ${adminKeypair.publicKey.toString()}`);
+  console.log(`Admin/Fee Payer: ${adminKeypair.publicKey.toString()}`);
 
   // Create connection and provider
   const connection = new anchor.web3.Connection(rpcUrl, 'confirmed');

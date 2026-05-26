@@ -154,7 +154,7 @@ pub mod contest {
         let global_config = &ctx.accounts.global_config;
         let contest = &mut ctx.accounts.contest;
         
-        // 🔐 AUTHORIZATION: Only admin can release prizes
+        // AUTHORIZATION: Only admin can release prizes
         require!(
             admin.key() == global_config.admin,
             ContestError::Unauthorized
@@ -232,7 +232,7 @@ pub mod contest {
         let admin = &ctx.accounts.admin;
         let global_config = &ctx.accounts.global_config;
         
-        // 🔐 AUTHORIZATION: Only admin can refund
+        // AUTHORIZATION: Only admin can refund
         require!(
             admin.key() == global_config.admin,
             ContestError::Unauthorized
@@ -292,7 +292,7 @@ pub mod contest {
         let admin = &ctx.accounts.admin;
         let global_config = &ctx.accounts.global_config;
         
-        // 🔐 AUTHORIZATION: Only admin can close
+        // AUTHORIZATION: Only admin can close
         require!(
             admin.key() == global_config.admin,
             ContestError::Unauthorized
@@ -306,7 +306,7 @@ pub mod contest {
         let contest_id = contest.key();
         let vault_auth_bump = ctx.bumps.vault_authority;
         
-        // 🔒 Close vault token account and reclaim rent to admin
+        // Close vault token account and reclaim rent to admin
         // We must use SPL Token's close_account instruction because ATAs are owned by the Token Program
         let signer_seeds: &[&[&[u8]]] = &[&[
             b"vault-authority",
@@ -345,7 +345,7 @@ pub mod contest {
         let global_config = &mut ctx.accounts.global_config;
         let new_admin = &ctx.accounts.new_admin;
         
-        // 🔐 AUTHORIZATION: Only current admin can update
+        // AUTHORIZATION: Only current admin can update
         require!(
             admin.key() == global_config.admin,
             ContestError::Unauthorized
@@ -458,7 +458,7 @@ pub struct CreateAndFundContest<'info> {
 #[derive(Accounts)]
 pub struct ReleasePrize<'info> {
     #[account(mut)]
-    pub admin: Signer<'info>,  // 🔐 Must be admin
+    pub admin: Signer<'info>,  // Must be admin
     
     #[account(
         seeds = [b"global-config"],
@@ -511,7 +511,7 @@ pub struct ReleasePrize<'info> {
 #[derive(Accounts)]
 pub struct Refund<'info> {
     #[account(mut)]
-    pub admin: Signer<'info>,  // 🔐 Must be admin
+    pub admin: Signer<'info>,  // Must be admin
     
     #[account(
         seeds = [b"global-config"],
@@ -567,7 +567,7 @@ pub struct Refund<'info> {
 #[derive(Accounts)]
 pub struct CloseContest<'info> {
     #[account(mut)]
-    pub admin: Signer<'info>,  // 🔐 Must be admin
+    pub admin: Signer<'info>,  // Must be admin
     
     #[account(
         seeds = [b"global-config"],
@@ -609,7 +609,7 @@ pub struct CloseContest<'info> {
 #[derive(Accounts)]
 pub struct UpdateAdmin<'info> {
     #[account(mut)]
-    pub admin: Signer<'info>,  // 🔐 Current admin (must sign)
+    pub admin: Signer<'info>,  // Current admin (must sign)
     
     #[account(
         mut,

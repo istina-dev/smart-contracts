@@ -9,7 +9,7 @@
  * - Use Squads Vault 0 for assets/authorities.
  * - Use the Multisig Account only for Squads SDK/CLI settings.
  * 
- * ⚠️ ONE-TIME OPERATION - Run on devnet first, then mainnet!
+ * ONE-TIME OPERATION - Run on devnet first, then mainnet.
  * 
  * Usage:
  *   npx ts-node migrations/update-admin-to-squads.ts --network devnet
@@ -70,7 +70,7 @@ async function main() {
 
   const envFile = loadEnvironment(network);
 
-  console.log('\n🔄 Updating Admin to Squads Vault 0');
+  console.log('\nUpdating Admin to Squads Vault 0');
   console.log('=====================================');
   console.log(`Network: ${network}`);
   console.log(`Env file: ${envFile}`);
@@ -82,7 +82,7 @@ async function main() {
     : process.env.SOLANA_RPC_ENDPOINT;
 
   if (!rpcUrl) {
-    console.error(`❌ RPC URL not configured in ${envFile}`);
+    console.error(`ERROR: RPC URL not configured in ${envFile}`);
     process.exit(1);
   }
 
@@ -99,32 +99,32 @@ async function main() {
     const secretKey = JSON.parse(feePayerSecret);
     currentAdminKeypair = anchor.web3.Keypair.fromSecretKey(Uint8Array.from(secretKey));
   } else {
-    console.error('❌ Fee payer keypair not configured.');
+    console.error('ERROR: Fee payer keypair not configured.');
     console.error(`   Set FEE_PAYER_KEYPAIR_PATH (recommended) or FEE_PAYER_SECRET_KEY (legacy) in ${envFile}`);
     process.exit(1);
   }
 
-  console.log(`👤 Current Admin: ${currentAdminKeypair.publicKey.toString()}`);
+  console.log(`Current Admin: ${currentAdminKeypair.publicKey.toString()}`);
 
   // Get new admin (Squads Vault 0)
   const newAdminPubkey = process.env.ADMIN_SQUADS_PUBLIC_KEY;
   if (!newAdminPubkey) {
-    console.error(`❌ ADMIN_SQUADS_PUBLIC_KEY not configured in ${envFile}`);
+    console.error(`ERROR: ADMIN_SQUADS_PUBLIC_KEY not configured in ${envFile}`);
     console.error(`   Please set your Squads Vault 0 address in ${envFile}`);
     process.exit(1);
   }
 
   const newAdmin = new anchor.web3.PublicKey(newAdminPubkey);
-  console.log(`🔐 New Admin (Squads Vault 0): ${newAdmin.toString()}`);
+  console.log(`New Admin (Squads Vault 0): ${newAdmin.toString()}`);
   if (process.env.SQUADS_MULTISIG_PUBLIC_KEY && process.env.SQUADS_MULTISIG_PUBLIC_KEY === newAdminPubkey) {
-    console.error('❌ ADMIN_SQUADS_PUBLIC_KEY equals SQUADS_MULTISIG_PUBLIC_KEY.');
+    console.error('ERROR: ADMIN_SQUADS_PUBLIC_KEY equals SQUADS_MULTISIG_PUBLIC_KEY.');
     console.error('   This is unsafe. ADMIN_SQUADS_PUBLIC_KEY must be Squads Vault 0, not the Multisig Account.');
     process.exit(1);
   }
   console.log('');
 
   // Confirm with user
-  console.log('⚠️  WARNING: This is a ONE-TIME operation!');
+  console.log('WARNING: This is a one-time operation.');
   console.log('   After this, only Squads Vault 0 can perform admin actions via approved Squads proposals.');
   console.log('   Make sure this is Vault 0, not the Multisig Account.');
   console.log('');
@@ -144,7 +144,7 @@ async function main() {
   const idlPath = path.join(__dirname, '..', 'target', 'idl', 'contest.json');
   
   if (!fs.existsSync(idlPath)) {
-    console.error('❌ IDL file not found. Please run: anchor build');
+    console.error('ERROR: IDL file not found. Please run: anchor build');
     process.exit(1);
   }
   
@@ -157,7 +157,7 @@ async function main() {
   // Anchor 0.30+ reads the program address from the IDL.
   const program = new anchor.Program(idl, provider);
 
-  console.log(`📋 Program ID: ${programId.toString()}`);
+  console.log(`Program ID: ${programId.toString()}`);
   console.log('');
 
   // Derive GlobalConfig PDA
@@ -166,7 +166,7 @@ async function main() {
     programId
   );
 
-  console.log(`🔍 GlobalConfig PDA: ${globalConfig.toString()}`);
+  console.log(`GlobalConfig PDA: ${globalConfig.toString()}`);
 
   // Check current state
   try {
@@ -182,7 +182,7 @@ async function main() {
     
     if (configAccount.admin.toString() !== currentAdminKeypair.publicKey.toString()) {
       console.error('');
-      console.error('❌ ERROR: Current admin does not match FEE_PAYER_SECRET_KEY!');
+      console.error('ERROR: Current admin does not match fee payer signer.');
       console.error(`   On-chain admin: ${configAccount.admin.toString()}`);
       console.error(`   Your keypair: ${currentAdminKeypair.publicKey.toString()}`);
       console.error('');
@@ -190,14 +190,14 @@ async function main() {
       process.exit(1);
     }
   } catch (e) {
-    console.error('❌ Failed to fetch GlobalConfig:', e);
+    console.error('ERROR: Failed to fetch GlobalConfig:', e);
     console.error('   Make sure the program is initialized with program_init');
     process.exit(1);
   }
 
   // Update admin
   console.log('');
-  console.log('🚀 Updating admin...');
+  console.log('Updating admin...');
   
   try {
     const tx = await (program.methods as any)
@@ -211,7 +211,7 @@ async function main() {
       .rpc();
 
     console.log('');
-    console.log('✅ Admin Updated Successfully!');
+    console.log('Admin Updated Successfully.');
     console.log(`   Transaction: ${tx}`);
     console.log(`   Explorer: https://solscan.io/tx/${tx}${network === 'devnet' ? '?cluster=devnet' : ''}`);
     console.log('');

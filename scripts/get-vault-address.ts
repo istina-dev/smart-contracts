@@ -47,14 +47,14 @@ async function main() {
   const contestIdArg = process.argv[2];
   const creatorArg = process.argv[3];
   if (!contestIdArg || !creatorArg) {
-    console.error('❌ Usage: npx ts-node scripts/get-vault-address.ts <contest_id> <creator_pubkey> [--network devnet|mainnet] [--mint <mint_pubkey>]');
+    console.error('ERROR: Usage: npx ts-node scripts/get-vault-address.ts <contest_id> <creator_pubkey> [--network devnet|mainnet] [--mint <mint_pubkey>]');
     console.error('   Example: npx ts-node scripts/get-vault-address.ts 0 11111111111111111111111111111111');
     process.exit(1);
   }
   
   const contestId = parseInt(contestIdArg, 10);
   if (isNaN(contestId)) {
-    console.error('❌ Invalid contest ID. Must be a number.');
+    console.error('ERROR: Invalid contest ID. Must be a number.');
     process.exit(1);
   }
   
@@ -67,7 +67,7 @@ async function main() {
   const mintOverride = mintIdx !== -1 ? args[mintIdx + 1] : undefined;
 
   if (!['devnet', 'mainnet'].includes(network)) {
-    console.error('❌ Invalid network. Use --network devnet or --network mainnet');
+    console.error('ERROR: Invalid network. Use --network devnet or --network mainnet');
     process.exit(1);
   }
 
@@ -76,7 +76,7 @@ async function main() {
   // Load program ID
   const programIdStr = process.env.SOLANA_PROGRAM_ID;
   if (!programIdStr) {
-    console.error(`❌ SOLANA_PROGRAM_ID not found in ${envFile}`);
+    console.error(`ERROR: SOLANA_PROGRAM_ID not found in ${envFile}`);
     process.exit(1);
   }
   const programId = new PublicKey(programIdStr);
@@ -87,7 +87,7 @@ async function main() {
     ? new PublicKey(mintOverride)
     : (network === 'mainnet' ? USDC_MAINNET_MINT : USDC_DEVNET_MINT);
   
-  console.log('\n🔍 Contest Vault Address Lookup');
+  console.log('\nContest Vault Address Lookup');
   console.log('================================\n');
   console.log(`Contest ID: ${contestId}`);
   console.log(`Creator: ${creator.toString()}`);
@@ -122,18 +122,18 @@ async function main() {
     true // allowOwnerOffCurve (PDA can own token accounts)
   );
   
-  console.log(`\n💰 VAULT ADDRESS (Send USDC here):`);
+  console.log(`\nVault Address (send USDC here):`);
   console.log(`   ${vaultTokenAccount.toString()}`);
   console.log(`\n   Explorer: https://explorer.solana.com/address/${vaultTokenAccount.toString()}${network === 'devnet' ? '?cluster=devnet' : ''}`);
   
-  console.log(`\n📋 How to Fund This Vault:`);
+  console.log(`\nHow to Fund This Vault:`);
   console.log(`   1. Get devnet USDC: https://faucet.circle.com/`);
   console.log(`   2. Send USDC to: ${vaultTokenAccount.toString()}`);
   console.log(`   3. Or use the funding script: npx ts-node scripts/fund-contest.ts ${contestId}\n`);
 }
 
 main().catch((error) => {
-  console.error('\n❌ Error:', error.message);
+  console.error('\nERROR:', error.message);
   process.exit(1);
 });
 
