@@ -20,7 +20,8 @@ const BPF_UPGRADEABLE_LOADER_ID = new anchor.web3.PublicKey(
 const SQUADS_PROGRAM_ID = new anchor.web3.PublicKey(
   "SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf"
 );
-const MAINNET_GENESIS_HASH = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp";
+const MAINNET_GENESIS_HASH =
+  "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
 
 const scriptDir = __dirname;
 const projectDir = path.resolve(scriptDir, "..");
