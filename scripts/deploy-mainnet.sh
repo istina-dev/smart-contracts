@@ -62,6 +62,7 @@ required_vars=(
   "FEE_PAYER_KEYPAIR_PATH"
   "FEE_PAYER_PUBLIC_KEY"
   "ADMIN_SQUADS_PUBLIC_KEY"
+  "SQUADS_MULTISIG_PUBLIC_KEY"
 )
 for var_name in "${required_vars[@]}"; do
   if [ -z "${!var_name}" ]; then
@@ -198,6 +199,15 @@ echo "INFO: Building program..."
 cd "$PROJECT_DIR"
 anchor build
 
+echo ""
+echo "INFO: Running mandatory pre-deploy production verification..."
+echo "   This verifies mainnet genesis hash, program ID, IDLs, and Squads Vault 0 before upload."
+if ! MAINNET_ENV_FILE="$MAINNET_ENV_FILE" node scripts/verify-production.js --network mainnet --stage pre-deploy; then
+    echo ""
+    echo "ERROR: Pre-deploy production verification failed. Refusing to upload to mainnet."
+    exit 1
+fi
+
 # Deploy/Upgrade using solana CLI (more reliable than anchor deploy)
 echo ""
 echo "INFO: Deploying to mainnet..."
@@ -317,12 +327,15 @@ fi
 # Success
 echo ""
 echo "========================================"
-echo "MAINNET DEPLOYMENT COMPLETE"
+echo "MAINNET BINARY UPLOAD COMPLETE - HANDOFF PENDING"
 echo "========================================"
 echo ""
 echo "Program ID: $SOLANA_PROGRAM_ID"
 echo "Explorer: https://explorer.solana.com/address/$SOLANA_PROGRAM_ID"
 echo "Solscan: https://solscan.io/account/$SOLANA_PROGRAM_ID"
+echo ""
+echo "This is not production-ready until GlobalConfig.admin and the program upgrade"
+echo "authority are both controlled by Squads Vault 0 and strict verification passes."
 echo ""
 echo "Security.txt embedded: YES"
 echo "   Contact: security@istina.co"
@@ -359,8 +372,8 @@ echo "1. Initialize GlobalConfig: npx ts-node scripts/init-program.ts --network 
 echo "2. Set GlobalConfig.admin to Squads Vault 0, never the Multisig Account"
 echo "3. Transfer program upgrade authority to Squads Vault 0:"
 echo "   solana program set-upgrade-authority \"$SOLANA_PROGRAM_ID\" --upgrade-authority \"$KEYPAIR_FILE\" --new-upgrade-authority \"$ADMIN_SQUADS_PUBLIC_KEY\" --skip-new-upgrade-authority-signer-check --keypair \"$KEYPAIR_FILE\" --url \"$(redact_url "$SOLANA_RPC_ENDPOINT")\""
-echo "4. Verify upgrade authority:"
-echo "   solana program show \"$SOLANA_PROGRAM_ID\" --url \"$(redact_url "$SOLANA_RPC_ENDPOINT")\""
+echo "4. Run strict post-handoff verification:"
+echo "   MAINNET_ENV_FILE=\"$MAINNET_ENV_FILE\" node scripts/verify-production.js --network mainnet --stage post-handoff"
 echo "5. Update production backend .env with PROGRAM_ID"
 echo "6. Test with small amounts first!"
 echo ""
