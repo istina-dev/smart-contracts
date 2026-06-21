@@ -13,7 +13,36 @@ REPO_ROOT="$(dirname "$PROJECT_DIR")"
 MAINNET_ENV_FILE="${MAINNET_ENV_FILE:-$REPO_ROOT/.env.mainnet.local}"
 
 redact_url() {
-  echo "$1" | sed -E 's/(api-key=)[^&[:space:]]+/\1***REDACTED***/g'
+  node -e '
+    const raw = process.argv[1] || "";
+    const tokenLike = (part) => {
+      try {
+        return decodeURIComponent(part).length >= 6;
+      } catch {
+        return part.length >= 6;
+      }
+    };
+    const redactUrl = (value) => {
+      const url = new URL(value);
+      if (url.username) url.username = "***REDACTED***";
+      if (url.password) url.password = "***REDACTED***";
+      for (const key of [...url.searchParams.keys()]) {
+        if (/key|token|secret|auth|password|signature|credential/i.test(key)) {
+          url.searchParams.set(key, "***REDACTED***");
+        }
+      }
+      url.pathname = url.pathname
+        .split("/")
+        .map((part) => (tokenLike(part) ? "***REDACTED***" : part))
+        .join("/");
+      return url.toString();
+    };
+    try {
+      console.log(redactUrl(raw));
+    } catch {
+      console.log(raw.replace(/(api[-_]?key|token|secret|auth|password|signature|credential)=([^&\s]+)/gi, "$1=***REDACTED***"));
+    }
+  ' "$1"
 }
 
 echo ""

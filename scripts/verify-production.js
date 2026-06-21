@@ -80,12 +80,57 @@ function warn(label, detail) {
 }
 
 function fail(label, detail) {
-  failures.push(`${label}${detail ? ` - ${detail}` : ""}`);
-  console.error(`FAIL: ${label}${detail ? ` - ${detail}` : ""}`);
+  const safeDetail = detail ? redactSensitiveText(detail) : "";
+  failures.push(`${label}${safeDetail ? ` - ${safeDetail}` : ""}`);
+  console.error(`FAIL: ${label}${safeDetail ? ` - ${safeDetail}` : ""}`);
+}
+
+function isSensitivePathSegment(value) {
+  try {
+    return decodeURIComponent(value).length >= 6;
+  } catch {
+    return value.length >= 6;
+  }
+}
+
+function redactUrl(rawUrl) {
+  const url = new URL(rawUrl);
+  if (url.username) url.username = "***REDACTED***";
+  if (url.password) url.password = "***REDACTED***";
+  for (const key of [...url.searchParams.keys()]) {
+    if (/key|token|secret|auth|password|signature|credential/i.test(key)) {
+      url.searchParams.set(key, "***REDACTED***");
+    }
+  }
+  url.pathname = url.pathname
+    .split("/")
+    .map((part) => (isSensitivePathSegment(part) ? "***REDACTED***" : part))
+    .join("/");
+  return url.toString();
+}
+
+function redactSensitiveText(value) {
+  return String(value || "")
+    .replace(/https?:\/\/[^\s"'<>]+/g, (match) => {
+      const punctuationMatch = match.match(/[)\].,;:!?}]+$/);
+      const trailingPunctuation = punctuationMatch ? punctuationMatch[0] : "";
+      const urlText = trailingPunctuation
+        ? match.slice(0, -trailingPunctuation.length)
+        : match;
+      try {
+        return `${redactUrl(urlText)}${trailingPunctuation}`;
+      } catch {
+        return match;
+      }
+    })
+    .replace(
+      /(api[-_]?key|token|secret|auth|password|signature|credential)=([^&\s]+)/gi,
+      "$1=***REDACTED***"
+    );
 }
 
 function describeRpcError(error) {
-  const message = error?.message || String(error);
+  const message = redactSensitiveText(error?.message || String(error));
   if (
     message.includes("401") ||
     message.toLowerCase().includes("unauthorized")
@@ -492,6 +537,6 @@ async function main() {
 main().catch((error) => {
   console.error("");
   console.error("ERROR: Production verification failed unexpectedly.");
-  console.error(error?.stack || error?.message || error);
+  console.error(redactSensitiveText(error?.stack || error?.message || error));
   process.exit(1);
 });
