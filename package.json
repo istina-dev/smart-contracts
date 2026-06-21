@@ -3,7 +3,10 @@
   "scripts": {
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
     "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
-    "test": "anchor test"
+    "test": "anchor test",
+    "verify:production": "node scripts/verify-production.js --network mainnet --stage post-handoff",
+    "verify:production:pre": "node scripts/verify-production.js --network mainnet --stage pre-deploy",
+    "verify:production:post-deploy": "node scripts/verify-production.js --network mainnet --stage post-deploy"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
